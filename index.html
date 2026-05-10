@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KT PostMaker - Karang Taruna Digital Tools</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600;700;800&family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Scripts & Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        kt: {
+                            orange: '#F97316',
+                            amber: '#F59E0B',
+                            slate: '#0F172A',
+                            light: '#F8FAFC'
+                        }
+                    },
+                    fontFamily: {
+                        poppins: ['Poppins', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                        urbanist: ['Urbanist', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #F97316; border-radius: 10px; }
+
+        .ig-artboard {
+            width: 432px; /* Scaling down for preview (1080/2.5) */
+            height: 540px; /* (1350/2.5) */
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border-radius: 4px;
+        }
+
+        .mesh-gradient {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(25,95%,53%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(38,92%,50%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(220,95%,15%,1) 0, transparent 50%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .blob {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(to right, #F97316, #F59E0B);
+            filter: blur(80px);
+            border-radius: 50%;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        /* Animation for preview */
+        .preview-enter {
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 640px) {
+            .ig-artboard {
+                width: 300px;
+                height: 375px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-kt-light font-inter text-kt-slate overflow-x-hidden">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 py-4 px-6 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="bg-kt-orange p-2 rounded-xl text-white">
+                <i class="fas fa-bolt text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-urbanist font-800 text-xl tracking-tight">KT <span class="text-kt-orange">PostMaker</span></h1>
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Youth movement tool</p>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="exportAllSlides()" class="bg-kt-slate text-white px-5 py-2 rounded-full font-bold text-sm hover:bg-black transition-all flex items-center gap-2">
+                <i class="fas fa-download"></i> Export PNG
+            </button>
+        </div>
+    </nav>
+
+    <div class="flex flex-col lg:flex-row min-h-screen">
+        <!-- SIDEBAR EDITOR -->
+        <aside class="w-full lg:w-[400px] bg-white border-r border-gray-100 p-6 sticky top-[73px] h-fit lg:h-[calc(100vh-73px)] overflow-y-auto">
+            <div class="space-y-8">
+                <div>
+                    <h2 class="text-sm font-bold uppercase text-gray-400 mb-4 tracking-widest">Global Settings</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold mb-1">Username / Handle</label>
+                            <input type="text" id="global-handle" value="@karangtarunaunit28" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-kt-orange outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="slides-editor-container" class="space-y-6">
+                    <!-- Slide Editors injected here -->
+                </div>
+
+                <button onclick="addNewSlide()" class="w-full py-4 border-2 border-dashed border-gray-200 rounded-2xl text-gray-400 font-bold hover:border-kt-orange hover:text-kt-orange transition-all flex flex-col items-center gap-2">
+                    <i class="fas fa-plus-circle text-2xl"></i>
+                    <span>Tambah Slide Baru</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- PREVIEW AREA -->
+        <main class="flex-1 p-6 lg:p-12 bg-slate-50 flex flex-col items-center">
+            <div class="mb-8 text-center" data-aos="fade-down">
+                <h3 class="font-urbanist font-800 text-3xl">Live Preview</h3>
+                <p class="text-gray-500">Geser untuk melihat alur carousel Anda</p>
+            </div>
+
+            <div id="carousel-preview" class="flex gap-8 overflow-x-auto pb-12 w-full max-w-full px-4 scroll-smooth">
+                <!-- Artboards injected here -->
+            </div>
+
+            <div class="mt-12 max-w-2xl w-full p-8 bg-kt-orange rounded-3xl text-white relative overflow-hidden shadow-2xl shadow-kt-orange/20" data-aos="zoom-in">
+                <div class="relative z-10">
+                    <h4 class="font-urbanist font-800 text-2xl mb-2 italic">"Pemuda bukan penonton. Pemuda adalah penggerak."</h4>
+                    <p class="opacity-90">Gunakan tools ini untuk menyebarkan pesan positif ke seluruh lingkunganmu. Karang Taruna bergerak!</p>
+                </div>
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Initialization
+        let slides = [];
+        const LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjfMpZNBo_XVYBQm9w-giL6Lna4ODcAzkYjv2Zg8tbXFcADZQPD1R4CsYEqZdHWYXvOOqvPBiGRMg6Khui8LDdKhXOvcDL83st0kuQajD__44Wynv2_SazNWQNcax5mbQLtiSA8Kc2XSBei/s713/logo-karang-taruna.png";
+
+        const DEFAULT_DATA = [
+            {
+                id: 1,
+                type: 'cover',
+                title: 'PEMUDA BERGERAK UNTUK SOSIAL',
+                subtitle: 'Membangun lingkungan inklusif dan berkelanjutan bersama unit 28.',
+                tagline: 'Karang Taruna Bergerak, Berkarya, Berdampak'
+            },
+            {
+                id: 2,
+                type: 'content',
+                title: 'Visi Perubahan',
+                desc: 'Kita tidak lagi hanya bicara tentang masa depan. Kita sedang membangunnya hari ini melalui aksi nyata di masyarakat.',
+                number: '01'
+            },
+            {
+                id: 3,
+                type: 'cta',
+                title: 'MARI BERGABUNG BERSAMA KAMI',
+                subtitle: 'Klik link di bio untuk pendaftaran relawan.',
+                btnText: 'DAFTAR SEKARANG'
+            },
+            {
+                id: 4,
+                type: 'closing',
+                title: 'Follow For More',
+                quote: 'Perubahan dimulai dari tangan pemuda yang berani bertindak.'
+            }
+        ];
+
+        // Load Data
+        function init() {
+            const saved = localStorage.getItem('kt_slides');
+            if (saved) {
+                slides = JSON.parse(saved);
+            } else {
+                slides = [...DEFAULT_DATA];
+            }
+            
+            const savedHandle = localStorage.getItem('kt_handle');
+            if (savedHandle) document.getElementById('global-handle').value = savedHandle;
+
+            renderEditor();
+            renderPreview();
+            AOS.init({ duration: 800, once: true });
+        }
+
+        // Global Event Listeners
+        document.getElementById('global-handle').addEventListener('input', (e) => {
+            localStorage.setItem('kt_handle', e.target.value);
+            renderPreview();
+        });
+
+        function renderEditor() {
+            const container = document.getElementById('slides-editor-container');
+            container.innerHTML = '';
+
+            slides.forEach((slide, index) => {
+                const div = document.createElement('div');
+                div.className = 'p-5 bg-kt-light border border-gray-200 rounded-2xl space-y-4 relative group';
+                
+                let fields = '';
+                if (slide.type === 'cover') {
+                    fields = `
+                        <input type="text" placeholder="Judul Besar" value="${slide.title}" oninput="updateSlide(${index}, 'title', this.value)" class="w-full p-2 border-b bg-transparent outline-none focus:border-kt-orange font-bold">
+                        <textarea placeholder="Subtitle" oninput="updateSlide(${index}, 'subtitle', this.value)" class="w-full p-2 bg-transparent outline-none text-sm resize-none h-20">${slide.subtitle}</textarea>
+                    `;
+                } else if (slide.type === 'content') {
+                    fields = `
+                        <input type="text" placeholder="Judul Kecil" value="${slide.title}" oninput="updateSlide(${index}, 'title', this.value)" class="w-full p-2 border-b bg-transparent outline-none focus:border-kt-orange font-bold">
+                        <textarea placeholder="Deskripsi" oninput="updateSlide(${index}, 'desc', this.value)" class="w-full p-2 bg-transparent outline-none text-sm resize-none h-24">${slide.desc}</textarea>
+                    `;
+                } else if (slide.type === 'cta') {
+                    fields = `
+                        <input type="text" placeholder="CTA Title" value="${slide.title}" oninput="updateSlide(${index}, 'title', this.value)" class="w-full p-2 border-b bg-transparent outline-none focus:border-kt-orange font-bold uppercase">
+                        <input type="text" placeholder="Button Text" value="${slide.btnText}" oninput="updateSlide(${index}, 'btnText', this.value)" class="w-full p-2 bg-transparent outline-none text-xs border border-dashed border-gray-300 rounded-md">
+                    `;
+                } else if (slide.type === 'closing') {
+                    fields = `
+                        <input type="text" value="${slide.title}" oninput="updateSlide(${index}, 'title', this.value)" class="w-full p-2 border-b bg-transparent outline-none focus:border-kt-orange font-bold">
+                        <textarea placeholder="Final Quote" oninput="updateSlide(${index}, 'quote', this.value)" class="w-full p-2 bg-transparent outline-none text-sm resize-none h-20">${slide.quote}</textarea>
+                    `;
+                }
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black px-2 py-1 bg-kt-slate text-white rounded">${slide.type.toUpperCase()}</span>
+                        <button onclick="deleteSlide(${index})" class="text-gray-300 hover:text-red-500 transition-colors"><i class="fas fa-trash"></i></button>
+                    </div>
+                    ${fields}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderPreview() {
+            const container = document.getElementById('carousel-preview');
+            const handle = document.getElementById('global-handle').value;
+            container.innerHTML = '';
+
+            slides.forEach((slide, index) => {
+                const artboard = document.createElement('div');
+                artboard.className = 'ig-artboard preview-enter';
+                artboard.id = `slide-export-${index}`;
+                
+                let innerHTML = '';
+
+                // Slide Rendering Logic
+                if (slide.type === 'cover') {
+                    innerHTML = `
+                        <div class="mesh-gradient w-full h-full p-10 flex flex-col justify-between text-white relative">
+                            <div class="blob -top-20 -left-20"></div>
+                            <div class="relative z-10 flex justify-between items-start">
+                                <img src="${LOGO_URL}" class="h-16 drop-shadow-lg" alt="Logo">
+                                <div class="text-right">
+                                    <p class="text-[8px] font-bold tracking-widest uppercase opacity-80">Karang Taruna</p>
+                                    <p class="text-[10px] font-black text-kt-amber">Official Media</p>
+                                </div>
+                            </div>
+                            <div class="relative z-10">
+                                <h1 class="font-urbanist font-900 text-4xl leading-none mb-4 tracking-tighter">${slide.title}</h1>
+                                <div class="w-12 h-1 bg-kt-amber mb-4"></div>
+                                <p class="text-sm font-medium opacity-90 leading-relaxed max-w-[80%]">${slide.subtitle}</p>
+                            </div>
+                            <div class="relative z-10 flex justify-between items-end border-t border-white/20 pt-6">
+                                <p class="text-[9px] font-bold uppercase tracking-widest leading-none">${slide.tagline}</p>
+                                <div class="text-[8px] font-black opacity-50">Swipe →</div>
+                            </div>
+                        </div>
+                    `;
+                } else if (slide.type === 'content') {
+                    innerHTML = `
+                        <div class="bg-white w-full h-full p-12 flex flex-col justify-between text-kt-slate relative">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-kt-orange/5 rounded-full -mr-10 -mt-10"></div>
+                            <div class="relative z-10">
+                                <p class="text-kt-orange font-black text-xs uppercase tracking-[0.3em] mb-2">Insight ${index}</p>
+                                <h2 class="font-urbanist font-800 text-3xl mb-6 leading-tight">${slide.title}</h2>
+                                <div class="w-full h-px bg-gray-100 mb-8"></div>
+                                <p class="text-lg text-gray-600 leading-relaxed font-inter">${slide.desc}</p>
+                            </div>
+                            <div class="relative z-10 flex justify-between items-center">
+                                <div class="flex items-center gap-2">
+                                    <img src="${LOGO_URL}" class="h-6" alt="Logo">
+                                    <span class="text-[10px] font-bold text-gray-400">${handle}</span>
+                                </div>
+                                <div class="w-8 h-8 rounded-full border border-kt-orange flex items-center justify-center text-[10px] font-black text-kt-orange">
+                                    ${index + 1}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (slide.type === 'cta') {
+                    innerHTML = `
+                        <div class="bg-kt-slate w-full h-full p-10 flex flex-col items-center justify-center text-center text-white relative">
+                            <div class="blob top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30"></div>
+                            <div class="relative z-10 space-y-8">
+                                <div class="inline-block p-4 bg-white/10 rounded-3xl backdrop-blur-md mb-4">
+                                    <i class="fas fa-paper-plane text-4xl text-kt-amber"></i>
+                                </div>
+                                <h2 class="font-urbanist font-900 text-4xl tracking-tighter leading-tight italic">${slide.title}</h2>
+                                <p class="text-sm opacity-80 max-w-[80%] mx-auto">${slide.subtitle}</p>
+                                <div class="pt-6">
+                                    <button class="px-8 py-4 bg-kt-orange text-white rounded-full font-black text-xs tracking-widest shadow-xl shadow-kt-orange/30">
+                                        ${slide.btnText}
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-[0.5em] opacity-40 uppercase">Ayo Bergerak</div>
+                        </div>
+                    `;
+                } else if (slide.type === 'closing') {
+                    innerHTML = `
+                        <div class="bg-kt-light w-full h-full p-10 flex flex-col justify-center items-center text-center text-kt-slate relative overflow-hidden">
+                            <div class="absolute -top-20 -right-20 w-64 h-64 bg-kt-orange/10 rounded-full blur-3xl"></div>
+                            <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-kt-amber/10 rounded-full blur-3xl"></div>
+                            
+                            <div class="relative z-10 mb-10">
+                                <img src="${LOGO_URL}" class="h-20 mx-auto drop-shadow-xl mb-6" alt="Logo">
+                                <h2 class="font-urbanist font-900 text-4xl tracking-tighter uppercase mb-2">${slide.title}</h2>
+                                <div class="flex gap-4 justify-center text-lg text-kt-orange mt-4">
+                                    <i class="fab fa-instagram"></i>
+                                    <i class="fab fa-tiktok"></i>
+                                    <i class="fab fa-youtube"></i>
+                                </div>
+                                <p class="mt-4 font-black text-xl text-kt-slate tracking-tight">${handle}</p>
+                            </div>
+                            
+                            <div class="relative z-10 p-6 glass-card rounded-2xl border border-gray-200">
+                                <p class="text-xs italic text-gray-500 leading-loose">"${slide.quote}"</p>
+                            </div>
+
+                            <div class="absolute bottom-8 text-[8px] font-black uppercase text-gray-300 tracking-[0.8em]">Unit 28 Berdaya</div>
+                        </div>
+                    `;
+                }
+
+                artboard.innerHTML = innerHTML;
+                container.appendChild(artboard);
+            });
+            localStorage.setItem('kt_slides', JSON.stringify(slides));
+        }
+
+        // Functions
+        function updateSlide(index, key, value) {
+            slides[index][key] = value;
+            renderPreview();
+        }
+
+        function addNewSlide() {
+            Swal.fire({
+                title: 'Pilih Tipe Slide',
+                input: 'select',
+                inputOptions: {
+                    'cover': 'Cover (Pembuka)',
+                    'content': 'Content (Isi)',
+                    'cta': 'CTA (Aksi)',
+                    'closing': 'Closing (Penutup)'
+                },
+                inputPlaceholder: 'Pilih tipe slide',
+                showCancelButton: true,
+                confirmButtonColor: '#F97316'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const type = result.value;
+                    let newSlide = { id: Date.now(), type: type };
+                    
+                    if (type === 'cover') {
+                        newSlide.title = 'JUDUL BARU';
+                        newSlide.subtitle = 'Subtitle deskripsi singkat.';
+                        newSlide.tagline = 'Karang Taruna Bergerak';
+                    } else if (type === 'content') {
+                        newSlide.title = 'Topik Penting';
+                        newSlide.desc = 'Tuliskan detail informasi atau fakta menarik di sini.';
+                        newSlide.number = '01';
+                    } else if (type === 'cta') {
+                        newSlide.title = 'MARI BERAKSI';
+                        newSlide.subtitle = 'Keterangan tambahan untuk aksi.';
+                        newSlide.btnText = 'KLIK DISINI';
+                    } else {
+                        newSlide.title = 'Follow Us';
+                        newSlide.quote = 'Kalimat penutup yang menginspirasi.';
+                    }
+
+                    slides.push(newSlide);
+                    renderEditor();
+                    renderPreview();
+                }
+            });
+        }
+
+        function deleteSlide(index) {
+            Swal.fire({
+                title: 'Hapus slide ini?',
+                text: "Tindakan ini tidak bisa dibatalkan.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#0F172A',
+                confirmButtonText: 'Ya, Hapus!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    slides.splice(index, 1);
+                    renderEditor();
+                    renderPreview();
+                }
+            });
+        }
+
+        async function exportAllSlides() {
+            Swal.fire({
+                title: 'Memproses Export...',
+                html: 'Mohon tunggu, kami sedang merender slide Anda.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            for (let i = 0; i < slides.length; i++) {
+                const element = document.getElementById(`slide-export-${i}`);
+                
+                // Temporarily scale up for high quality export
+                const originalStyle = element.style.cssText;
+                element.style.width = '1080px';
+                element.style.height = '1350px';
+                element.style.transform = 'none';
+
+                const canvas = await html2canvas(element, {
+                    scale: 2, // 2x density
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: null
+                });
+
+                // Restore original style
+                element.style.cssText = originalStyle;
+
+                const link = document.createElement('a');
+                link.download = `KT-Post-Slide-${i+1}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+
+            Swal.close();
+            Swal.fire({
+                title: 'Export Berhasil!',
+                text: `${slides.length} slide telah diunduh.`,
+                icon: 'success',
+                confirmButtonColor: '#F97316'
+            });
+        }
+
+        // Run on load
+        window.onload = init;
+    </script>
+</body>
+</html>
