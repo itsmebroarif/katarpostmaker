@@ -225,7 +225,9 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         // Constants
-        const LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjfMpZNBo_XVYBQm9w-giL6Lna4ODcAzkYjv2Zg8tbXFcADZQPD1R4CsYEqZdHWYXvOOqvPBiGRMg6Khui8LDdKhXOvcDL83st0kuQajD__44Wynv2_SazNWQNcax5mbQLtiSA8Kc2XSBei/s713/logo-karang-taruna.png";
+        const RAW_LOGO_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjfMpZNBo_XVYBQm9w-giL6Lna4ODcAzkYjv2Zg8tbXFcADZQPD1R4CsYEqZdHWYXvOOqvPBiGRMg6Khui8LDdKhXOvcDL83st0kuQajD__44Wynv2_SazNWQNcax5mbQLtiSA8Kc2XSBei/s713/logo-karang-taruna.png";
+        // Menggunakan CORS Proxy agar gambar bisa digambar ulang oleh html2canvas
+        const LOGO_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(RAW_LOGO_URL)}`;
         
         // Default Template
         const DEFAULT_DATA = [
@@ -449,7 +451,7 @@
             const waterMark = `
                 <div class="absolute bottom-[60px] w-full px-[80px] flex justify-between items-end z-20">
                     <div class="flex items-center gap-4 glass-card px-[25px] py-[15px] rounded-full">
-                        <img src="${LOGO_URL}" class="h-[45px]" alt="Logo">
+                        <img src="${LOGO_URL}" crossorigin="anonymous" class="h-[45px]" alt="Logo">
                         <span class="text-[26px] font-bold text-white tracking-wider">@${globalHandle}</span>
                     </div>
                     <div class="text-[22px] font-black text-white/50 uppercase tracking-[0.3em] flex items-center gap-3">Swipe <i class="fas fa-arrow-right"></i></div>
@@ -470,7 +472,7 @@
                         <div class="relative z-10 flex flex-col h-full justify-between">
                             <div class="flex justify-between items-start">
                                 <div class="glass-card px-[40px] py-[25px] rounded-[30px] flex items-center gap-6">
-                                    <img src="${LOGO_URL}" class="h-[80px]" alt="Logo">
+                                    <img src="${LOGO_URL}" crossorigin="anonymous" class="h-[80px]" alt="Logo">
                                     <div>
                                         <p class="text-[20px] font-bold tracking-[0.3em] uppercase opacity-90 text-white">Karang Taruna</p>
                                         <p class="text-[24px] font-black text-kt-amber">Official Media</p>
@@ -527,7 +529,7 @@
 
                             <div class="mt-auto flex justify-between items-end border-t-[3px] ${lineColor} pt-[60px]">
                                 <div class="flex items-center gap-5 glass-card px-[25px] py-[15px] rounded-full">
-                                    <img src="${LOGO_URL}" class="h-[50px] ${hasCustomBg?'':'grayscale opacity-80'}" alt="Logo">
+                                    <img src="${LOGO_URL}" crossorigin="anonymous" class="h-[50px] ${hasCustomBg?'':'grayscale opacity-80'}" alt="Logo">
                                     <span class="text-[28px] font-bold ${textColor}">@${globalHandle}</span>
                                 </div>
                                 <div class="w-[90px] h-[90px] rounded-full border-[5px] border-kt-orange flex items-center justify-center text-[36px] font-black text-kt-orange ${hasCustomBg ? 'bg-slate-900/50 backdrop-blur' : 'bg-white shadow-xl'}">
@@ -582,7 +584,7 @@
                         ` : ''}
                         
                         <div class="relative z-10 w-full px-[100px] flex flex-col items-center">
-                            <img src="${LOGO_URL}" class="h-[250px] drop-shadow-2xl mb-[80px]" alt="Logo">
+                            <img src="${LOGO_URL}" crossorigin="anonymous" class="h-[250px] drop-shadow-2xl mb-[80px]" alt="Logo">
                             
                             <h2 class="font-urbanist font-900 text-[120px] tracking-tighter uppercase mb-[30px] ${textColor} drop-shadow-xl">
                                 ${slide.title}
@@ -732,7 +734,7 @@
                     const canvas = await html2canvas(element, {
                         scale: 1, // 1:1 scale for 1080x1350
                         useCORS: true,
-                        allowTaint: true,
+                        // allowTaint dihapus agar kanvas diizinkan menggunakan fungsi toDataURL
                         logging: false,
                         backgroundColor: '#0F172A' // Fallback bg
                     });
