@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>KT Content Scheduler</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- SweetAlert -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+
+  <style>
+    body{
+      background:#f5f5f5;
+      font-family:'Patrick Hand', cursive;
+      color:#111;
+      padding:30px;
+      background-image:
+      linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+      background-size:20px 20px;
+    }
+
+    .title-box{
+      background:#fff;
+      border:4px solid #000;
+      box-shadow:8px 8px 0 #000;
+      padding:20px;
+      margin-bottom:30px;
+      transform:rotate(-1deg);
+    }
+
+    .title-box h1{
+      font-family:'Gloria Hallelujah', cursive;
+      font-size:42px;
+      margin:0;
+    }
+
+    .scheduler-card{
+      background:#fff;
+      border:4px solid #000;
+      box-shadow:6px 6px 0 #000;
+      border-radius:10px;
+      transition:0.2s;
+      margin-bottom:20px;
+      overflow:hidden;
+    }
+
+    .scheduler-card:hover{
+      transform:translate(-3px,-3px);
+      box-shadow:10px 10px 0 #000;
+    }
+
+    .card-header-custom{
+      padding:15px;
+      border-bottom:4px solid #000;
+      font-size:24px;
+      font-weight:bold;
+    }
+
+    .multimedia{
+      background:#ffd166;
+    }
+
+    .keamanan{
+      background:#ef476f;
+      color:#fff;
+    }
+
+    .humas{
+      background:#06d6a0;
+    }
+
+    .olahraga{
+      background:#118ab2;
+      color:#fff;
+    }
+
+    .wirausaha{
+      background:#f78c6b;
+    }
+
+    .digital{
+      background:#8e7dff;
+      color:#fff;
+    }
+
+    .content-body{
+      padding:18px;
+    }
+
+    .status-select{
+      border:3px solid #000;
+      border-radius:10px;
+      font-weight:bold;
+      background:#fff;
+    }
+
+    .neo-btn{
+      border:3px solid #000;
+      background:#fff;
+      box-shadow:4px 4px 0 #000;
+      transition:0.15s;
+      font-weight:bold;
+    }
+
+    .neo-btn:hover{
+      transform:translate(-2px,-2px);
+      box-shadow:6px 6px 0 #000;
+    }
+
+    .url-box{
+      margin-top:10px;
+      font-size:15px;
+      word-break:break-all;
+    }
+
+    .badge-date{
+      border:2px solid #000;
+      padding:5px 10px;
+      background:#fff;
+      font-size:16px;
+      border-radius:8px;
+    }
+
+    .json-box{
+      background:#111;
+      color:#00ff88;
+      padding:20px;
+      border-radius:10px;
+      border:4px solid #000;
+      font-family:monospace;
+      max-height:400px;
+      overflow:auto;
+      white-space:pre-wrap;
+    }
+
+    .sticky-top-custom{
+      position:sticky;
+      top:10px;
+      z-index:99;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="title-box">
+    <h1>📅 Karang Taruna Content Scheduler</h1>
+    <p class="mb-0">
+      Scheduler konten ala menu <b>OMORI</b> + neo-brutalism. Karena manusia ternyata perlu sistem untuk mengatur postingan Instagram supaya hidup terasa sedikit lebih terkendali.
+    </p>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div id="schedulerContainer"></div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="sticky-top-custom">
+
+        <div class="scheduler-card">
+          <div class="card-header-custom multimedia">
+            💾 JSON STORAGE
+          </div>
+
+          <div class="content-body">
+
+            <button class="btn neo-btn w-100 mb-3" onclick="downloadJSON()">
+              Download JSON
+            </button>
+
+            <div class="json-box" id="jsonPreview"></div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+const contents = [
+  // 12
+  {
+    division:"📸 Multimedia",
+    class:"multimedia",
+    title:"Behind The Scene Kegiatan Kami",
+    date:"2026-05-12"
+  },
+
+  // 13
+  {
+    division:"📢 Humas & Aset",
+    class:"humas",
+    title:"Jadi Penghubung Antar Warga",
+    date:"2026-05-13"
+  },
+
+  // 14
+  {
+    division:"⚽ Olahraga & Kerohanian",
+    class:"olahraga",
+    title:"Sehat Bareng, Kompak Bareng",
+    date:"2026-05-14"
+  },
+
+  // 15
+  {
+    division:"🎨 Kewirausahaan & Seni Budaya",
+    class:"wirausaha",
+    title:"Anak Muda dan Kreativitas Tanpa Batas",
+    date:"2026-05-15"
+  },
+
+  // 16
+  {
+    division:"💻 Sistem Informasi Digital",
+    class:"digital",
+    title:"Teknologi Bisa Membantu Lingkungan Lebih Rapi",
+    date:"2026-05-16"
+  },
+
+  // 17
+  {
+    division:"🛡️ Keamanan",
+    class:"keamanan",
+    title:"Kenapa Keamanan Acara Itu Penting?",
+    date:"2026-05-17"
+  },
+
+  // 18
+  {
+    division:"📸 Multimedia",
+    class:"multimedia",
+    title:"Cara Tim Multimedia Menyimpan Momen Berharga",
+    date:"2026-05-18"
+  },
+
+  // 19
+  {
+    division:"📢 Humas & Aset",
+    class:"humas",
+    title:"Cara Menjalin Hubungan yang Baik di Lingkungan",
+    date:"2026-05-19"
+  },
+
+  // 20
+  {
+    division:"⚽ Olahraga & Kerohanian",
+    class:"olahraga",
+    title:"Kenapa Kegiatan Olahraga Itu Seru?",
+    date:"2026-05-20"
+  },
+
+  // 21
+  {
+    division:"🎨 Kewirausahaan & Seni Budaya",
+    class:"wirausaha",
+    title:"Belajar Usaha Dari Lingkungan Sekitar",
+    date:"2026-05-21"
+  },
+
+  // 22
+  {
+    division:"💻 Sistem Informasi Digital",
+    class:"digital",
+    title:"Tim Digital Kerjanya Apa Saja?",
+    date:"2026-05-22"
+  },
+
+  // 23
+  {
+    division:"🛡️ Keamanan",
+    class:"keamanan",
+    title:"Tim yang Datang Paling Awal Pulang Paling Akhir",
+    date:"2026-05-23"
+  },
+
+  // 24
+  {
+    division:"📸 Multimedia",
+    class:"multimedia",
+    title:"Kenapa Dokumentasi Itu Penting?",
+    date:"2026-05-24"
+  },
+
+  // 25
+  {
+    division:"📢 Humas & Aset",
+    class:"humas",
+    title:"Barang Bersama, Dijaga Bersama",
+    date:"2026-05-25"
+  },
+
+  // 26
+  {
+    division:"⚽ Olahraga & Kerohanian",
+    class:"olahraga",
+    title:"Menjaga Kebersamaan Lewat Kegiatan Positif",
+    date:"2026-05-26"
+  },
+
+  // 27
+  {
+    division:"🎨 Kewirausahaan & Seni Budaya",
+    class:"wirausaha",
+    title:"Kenapa Seni dan Budaya Harus Dijaga?",
+    date:"2026-05-27"
+  },
+
+  // 28
+  {
+    division:"💻 Sistem Informasi Digital",
+    class:"digital",
+    title:"Kenapa Organisasi Mulai Butuh Sistem Digital?",
+    date:"2026-05-28"
+  },
+
+  // 29
+  {
+    division:"🛡️ Keamanan",
+    class:"keamanan",
+    title:"Menjaga Acara Tetap Aman dan Nyaman",
+    date:"2026-05-29"
+  }
+
+];
+
+function loadData(){
+  const saved = localStorage.getItem("kt_scheduler");
+
+  if(saved){
+    return JSON.parse(saved);
+  }
+
+  return contents.map(item => ({
+    ...item,
+    status:"Planning",
+    url:""
+  }));
+}
+
+let data = loadData();
+
+function saveData(){
+  localStorage.setItem("kt_scheduler", JSON.stringify(data, null, 2));
+  renderJSON();
+}
+
+function renderJSON(){
+  document.getElementById("jsonPreview").innerText =
+  JSON.stringify(data, null, 2);
+}
+
+function renderScheduler(){
+
+  const container = document.getElementById("schedulerContainer");
+  container.innerHTML = "";
+
+  data.forEach((item,index)=>{
+
+    const card = document.createElement("div");
+    card.className = "scheduler-card";
+
+    card.innerHTML = `
+      <div class="card-header-custom ${item.class}">
+        ${item.division}
+      </div>
+
+      <div class="content-body">
+
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+
+          <h3>${item.title}</h3>
+
+          <div class="badge-date">
+            ${formatDate(item.date)}
+          </div>
+
+        </div>
+
+        <select class="form-select status-select"
+          onchange="changeStatus(${index}, this.value)">
+          
+          <option value="Planning" ${item.status === "Planning" ? "selected":""}>
+            📝 Planning
+          </option>
+
+          <option value="On Progress" ${item.status === "On Progress" ? "selected":""}>
+            ⚡ On Progress
+          </option>
+
+          <option value="Done" ${item.status === "Done" ? "selected":""}>
+            ✅ Done
+          </option>
+
+        </select>
+
+        ${
+          item.url
+          ?
+          `
+          <div class="url-box">
+            🔗 <a href="${item.url}" target="_blank">${item.url}</a>
+          </div>
+          `
+          :
+          ""
+        }
+
+      </div>
+    `;
+
+    container.appendChild(card);
+
+  });
+
+}
+
+function formatDate(dateString){
+
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString("id-ID",{
+    day:"numeric",
+    month:"long",
+    year:"numeric"
+  });
+
+}
+
+function changeStatus(index,value){
+
+  data[index].status = value;
+
+  if(value === "Done"){
+
+    Swal.fire({
+      title:'Masukkan URL Konten',
+      input:'text',
+      inputPlaceholder:'https://instagram.com/...',
+      confirmButtonText:'Simpan',
+      background:'#fff',
+      color:'#111',
+      customClass:{
+        popup:'swal2-border'
+      },
+      preConfirm:(url)=>{
+
+        if(!url){
+          Swal.showValidationMessage('URL tidak boleh kosong');
+        }
+
+        return url;
+      }
+
+    }).then((result)=>{
+
+      if(result.isConfirmed){
+
+        data[index].url = result.value;
+
+        saveData();
+        renderScheduler();
+
+        Swal.fire({
+          icon:'success',
+          title:'Konten Selesai!',
+          text:'URL berhasil disimpan.',
+          confirmButtonText:'Mantap'
+        });
+
+      }
+
+    });
+
+  } else {
+
+    saveData();
+    renderScheduler();
+
+  }
+
+}
+
+function downloadJSON(){
+
+  const blob = new Blob(
+    [JSON.stringify(data,null,2)],
+    {type:"application/json"}
+  );
+
+  const a = document.createElement("a");
+
+  a.href = URL.createObjectURL(blob);
+
+  a.download = "kt-content-scheduler.json";
+
+  a.click();
+
+}
+
+renderScheduler();
+renderJSON();
+
+</script>
+
+</body>
+</html>
